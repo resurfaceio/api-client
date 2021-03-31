@@ -7,3 +7,4 @@ parts
 *.ui
 test_qt.py
 *.pyc
+file.py
