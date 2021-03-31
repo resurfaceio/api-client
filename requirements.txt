@@ -1,0 +1,2 @@
+PyQt5==5.15.2
+git+https://github.com/resurfaceio/logger-python@master#egg=usagelogger
