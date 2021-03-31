@@ -1,0 +1,9 @@
+dist
+.vscode
+build
+*.spec
+parts
+.venv
+*.ui
+test_qt.py
+*.pyc
