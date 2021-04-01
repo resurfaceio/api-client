@@ -1,7 +1,7 @@
 import json
 from urllib.parse import urlparse
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMessageBox, QWidget
 from usagelogger import resurface
 
@@ -193,6 +193,7 @@ class Ui_MainWindow(QWidget):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Resurfaceio | Client"))
+        MainWindow.setWindowIcon(QtGui.QIcon("./assets/resurface.ico"))
         # self.req_graphql.setHtml(
         #     _translate(
         #         "MainWindow",
