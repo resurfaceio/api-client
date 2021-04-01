@@ -6,7 +6,7 @@
 
 1. Build:
    ```
-   pyinstaller --onefile --windowed resurface_client.py
+   pyinstaller --onefile --windowed --icon=./assets/resurface.ico resurface_client.py
    ```
 1. Find your executable in `dist` folder.
 

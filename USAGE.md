@@ -4,11 +4,11 @@
 
 2. Setup Resurface Host and Rules from `settings` menu.
 
-   ![](./examples/ex_2.png)
+   ![](./assets/ex_2.png)
 
 3. Send `GET`, `POST` or `GRAPHQL` request.
 
-![](./examples/ex_1.png)
+![](./assets/ex_1.png)
 
 ### Example Requests
 

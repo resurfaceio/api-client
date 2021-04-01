@@ -9,9 +9,9 @@ Example GUI APP for testing resurface client
 
 ## Ports Used
 
-4002 - Resurface API Explorer
-4001 - Resurface microservice
-4000 - Trino database UI
+- 4002 - Resurface API Explorer
+- 4001 - Resurface microservice
+- 4000 - Trino database UI
 
 ## Downloads
 
