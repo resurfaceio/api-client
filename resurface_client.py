@@ -132,11 +132,9 @@ class Ui_MainWindow(QWidget):
         msg_.setText(msg)
         x = msg_.exec_()
 
-    def format_data(self, data, gql=False):
+    def format_data(self, data):
         data_ = data
         try:
-            if gql:
-                pass
             data_ = json.loads(data_)
         except Exception as e:
             print(e)
@@ -179,7 +177,6 @@ class Ui_MainWindow(QWidget):
             else:
                 response = sess.get(url, headers=self.format_data(headers_))
             self.response_content.setText(response.text)
-            # print(response.headers)
             self.response_header.setText(self.format_dict_str(response.headers))
         else:
             self.popup(msg="Invalid URL", type="Error")
@@ -219,7 +216,7 @@ class Ui_MainWindow(QWidget):
                 "p, li { white-space: pre-wrap; }\n"
                 "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;\">\n"
                 '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">{</p>\n'
-                '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&quot;content-type&quot;: &quot;applcication/json&quot;</p>\n'
+                '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&quot;content-type&quot;: &quot;application/json&quot;</p>\n'
                 '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">}</p></body></html>',
             )
         )
