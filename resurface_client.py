@@ -1,4 +1,5 @@
 import json
+import sys
 from urllib.parse import urlparse
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -6,8 +7,8 @@ from PyQt5.QtWidgets import QMessageBox, QWidget
 from usagelogger import resurface
 
 
-class Ui_MainWindow(QWidget):
-    def setupUi(self, MainWindow):
+class ResurfaceView(QWidget):
+    def setupUi(self, MainWindow, controller):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(887, 403)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -96,115 +97,16 @@ class Ui_MainWindow(QWidget):
         self.menuFile.addAction(self.actionSetup_Rules)
         self.menubar.addAction(self.menuFile.menuAction())
 
-        self.retranslateUi(MainWindow)
+        self.retranslateUi(MainWindow, controller)
         self.req_widget.setCurrentIndex(0)
         self.res_widget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        self.resurface_host = "http://localhost:4001/message"
-        self.resurface_rules = "include debug"
-
-    def validate(self, url_data):
-        if not url_data:
-            return False
-        result = urlparse(url_data)
-        return all([result.scheme, result.netloc, result.path])
-
-    def showDialog(self, form_label=None, setting_type=None):
-        text, ok = QtWidgets.QInputDialog.getText(
-            self,
-            "Settings",
-            form_label,
-            text=self.resurface_host
-            if setting_type == "HOST"
-            else self.resurface_rules,
-        )
-        if ok:
-            if text:
-                if setting_type == "HOST":
-                    self.resurface_host = str(text)
-                elif setting_type == "RULES":
-                    self.resurface_rules = str(text)
-
-    def popup(self, type="Info", msg=None):
-        msg_ = QMessageBox()
-        msg_.setWindowTitle(f"{type}")
-        msg_.setText(msg)
-        x = msg_.exec_()
-
-    def format_data(self, data):
-        data_ = data
-        try:
-            data_ = json.loads(data_)
-        except Exception as e:
-            print(e)
-
-    def format_dict_str(self, data: dict) -> str:
-        list_ = []
-        for k, v in data.items():
-            list_.append(f"{k}: {v}")
-        return "\n".join(list_)
-
-    def handle_submission(
-        self,
-        url,
-        sess=None,
-    ):
-        if not sess:
-            sess = resurface.Session(
-                url=self.resurface_host, rules=self.resurface_rules
-            )
-        self.response_content.clear()
-        if self.validate(url):
-            method_ = self.methodCombo.currentText()
-            headers_ = self.req_headers.toPlainText()
-
-            response = None
-            if method_ == "POST":
-
-                response = sess.post(
-                    url,
-                    data=self.format_data(self.req_body.toPlainText()),
-                    headers=self.format_data(headers_),
-                )
-            elif method_ == "GRAPHQL":
-                response = sess.post(
-                    url,
-                    json={"query": self.req_body.toPlainText()},
-                    headers=self.format_data(headers_),
-                )
-
-            else:
-                response = sess.get(url, headers=self.format_data(headers_))
-            self.response_content.setText(response.text)
-            self.response_header.setText(self.format_dict_str(response.headers))
-        else:
-            self.popup(msg="Invalid URL", type="Error")
-
-    def clicked(self, text=None):
-
-        if text:
-            self.sendReq.setText(text)
-        self.handle_submission(self.uRLLineEdit.text())
-
-    def retranslateUi(self, MainWindow):
+    def retranslateUi(self, MainWindow, controller):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Resurfaceio | Client"))
         MainWindow.setWindowIcon(QtGui.QIcon("./assets/resurface.ico"))
-        # self.req_graphql.setHtml(
-        #     _translate(
-        #         "MainWindow",
-        #         '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">\n'
-        #         '<html><head><meta name="qrichtext" content="1" /><style type="text/css">\n'
-        #         "p, li { white-space: pre-wrap; }\n"
-        #         "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;\">\n"
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">query{</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">  allNews{</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">    id</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">  }</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">}</p></body></html>',
-        #     )
-        # )
+
         self.req_widget.setTabText(
             self.req_widget.indexOf(self.body), _translate("MainWindow", "Body")
         )
@@ -230,42 +132,12 @@ class Ui_MainWindow(QWidget):
         self.methodCombo.setItemText(2, _translate("MainWindow", "GRAPHQL"))
 
         self.sendReq.setText(_translate("MainWindow", "Send"))
-        self.sendReq.clicked.connect(self.clicked)
+        self.sendReq.clicked.connect(controller.clicked)
 
-        # self.response_content.setHtml(
-        #     _translate(
-        #         "MainWindow",
-        #         '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">\n'
-        #         '<html><head><meta name="qrichtext" content="1" /><style type="text/css">\n'
-        #         "p, li { white-space: pre-wrap; }\n"
-        #         "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;\">\n"
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">{</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">  &quot;data&quot;: {</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">    &quot;allNews&quot;: [</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">      {</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">        &quot;id&quot;: &quot;1&quot;</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">      }</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">    ]</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">  }</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">}</p></body></html>',
-        #     )
-        # )
         self.res_widget.setTabText(
             self.res_widget.indexOf(self.response), _translate("MainWindow", "Response")
         )
-        # self.response_header.setHtml(
-        #     _translate(
-        #         "MainWindow",
-        #         '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">\n'
-        #         '<html><head><meta name="qrichtext" content="1" /><style type="text/css">\n'
-        #         "p, li { white-space: pre-wrap; }\n"
-        #         "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;\">\n"
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Content-Type: application/json</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Content-Length: 33</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Server: Werkzeug/1.0.1 Python/3.8.5</p>\n'
-        #         '<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Date: Fri, 19 Mar 2021 08:51:45 GMT</p></body></html>',
-        #     )
-        # )
+
         self.res_widget.setTabText(
             self.res_widget.indexOf(self.headers1), _translate("MainWindow", "Headers")
         )
@@ -279,13 +151,114 @@ class Ui_MainWindow(QWidget):
             lambda: self.showDialog("Rules", setting_type="RULES")
         )
 
+    def showDialog(self, form_label=None, setting_type=None):
+        text, ok = QtWidgets.QInputDialog.getText(
+            self,
+            "Settings",
+            form_label,
+            text=self.resurface_host
+            if setting_type == "HOST"
+            else self.resurface_rules,
+        )
+        if ok:
+            if text:
+                if setting_type == "HOST":
+                    self.resurface_host = str(text)
+                elif setting_type == "RULES":
+                    self.resurface_rules = str(text)
+
+    @staticmethod
+    def popup(type="Info", msg=None):
+        msg_ = QMessageBox()
+        msg_.setWindowTitle(f"{type}")
+        msg_.setText(msg)
+        x = msg_.exec_()
+
+
+class Controller:
+    def __init__(self):
+        self.view = None
+        self.resurface_host = "http://localhost:4001/message"
+        self.resurface_rules = "include debug"
+
+    def start(self, view):
+        app = QtWidgets.QApplication(sys.argv)
+        MainWindow = QtWidgets.QMainWindow()
+        self.view = view()
+        self.view.setupUi(MainWindow, self)
+        MainWindow.show()
+        sys.exit(app.exec_())
+
+    def clicked(self, text=None):
+        if text:
+            self.view.sendReq.setText(text)
+        self.handle_submission(self.view.uRLLineEdit.text())
+
+    def handle_submission(
+        self,
+        url,
+        sess=None,
+    ):
+        if not sess:
+            sess = resurface.Session(
+                url=self.resurface_host, rules=self.resurface_rules
+            )
+        self.view.response_content.clear()
+        if self.validate(url):
+            method_ = self.view.methodCombo.currentText()
+            headers_ = self.view.req_headers.toPlainText()
+
+            response = None
+            try:
+                if method_ == "POST":
+                    response = sess.post(
+                        url,
+                        data=self.format_data(self.view.req_body.toPlainText()),
+                        headers=self.format_data(headers_),
+                    )
+                elif method_ == "GRAPHQL":
+                    response = sess.post(
+                        url,
+                        json={"query": self.view.req_body.toPlainText()},
+                        headers=self.format_data(headers_),
+                    )
+
+                else:
+                    response = sess.get(url, headers=self.format_data(headers_))
+                self.view.response_content.setText(response.text)
+                self.view.response_header.setText(
+                    self.format_dict_str(response.headers)
+                )
+            except Exception as e:
+                self.view.popup(msg="Connection Error!", type="Error")
+
+        else:
+            self.view.popup(msg="Invalid URL", type="Error")
+
+    @staticmethod
+    def validate(url_data):
+        if not url_data:
+            return False
+
+        result = urlparse(url_data)
+        return all([result.scheme, result.path])
+
+    @staticmethod
+    def format_data(data):
+        data_ = data
+        try:
+            data_ = json.loads(data_)
+        except Exception as e:
+            print(e)
+
+    @staticmethod
+    def format_dict_str(data: dict) -> str:
+        list_ = []
+        for k, v in data.items():
+            list_.append(f"{k}: {v}")
+        return "\n".join(list_)
+
 
 if __name__ == "__main__":
-    import sys
-
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())
+    c = Controller()
+    c.start(ResurfaceView)
