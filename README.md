@@ -15,7 +15,7 @@ Example GUI APP for testing resurface client
 
 ## Downloads
 
-- Windows
+- [Windows](https://github.com/resurfaceio/api-client/releases)
 
 - Mac OS
 
