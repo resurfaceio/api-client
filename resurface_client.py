@@ -144,28 +144,28 @@ class ResurfaceView(QWidget):
         self.menuFile.setTitle(_translate("MainWindow", "Settings"))
         self.actionSetup_Host.setText(_translate("MainWindow", "Setup Host"))
         self.actionSetup_Host.triggered.connect(
-            lambda: self.showDialog("Host Name", setting_type="HOST")
+            lambda: self.showDialog(controller, "Host Name", setting_type="HOST")
         )
         self.actionSetup_Rules.setText(_translate("MainWindow", "Setup Rules"))
         self.actionSetup_Rules.triggered.connect(
-            lambda: self.showDialog("Rules", setting_type="RULES")
+            lambda: self.showDialog(controller, "Rules", setting_type="RULES")
         )
 
-    def showDialog(self, form_label=None, setting_type=None):
+    def showDialog(self, controller, form_label=None, setting_type=None):
         text, ok = QtWidgets.QInputDialog.getText(
             self,
             "Settings",
             form_label,
-            text=self.resurface_host
+            text=controller.resurface_host
             if setting_type == "HOST"
-            else self.resurface_rules,
+            else controller.resurface_rules,
         )
         if ok:
             if text:
                 if setting_type == "HOST":
-                    self.resurface_host = str(text)
+                    controller.resurface_host = str(text)
                 elif setting_type == "RULES":
-                    self.resurface_rules = str(text)
+                    controller.resurface_rules = str(text)
 
     @staticmethod
     def popup(type="Info", msg=None):
