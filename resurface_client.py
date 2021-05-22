@@ -1,6 +1,6 @@
 import json
+import re
 import sys
-from urllib.parse import urlparse
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMessageBox, QWidget
@@ -144,28 +144,28 @@ class ResurfaceView(QWidget):
         self.menuFile.setTitle(_translate("MainWindow", "Settings"))
         self.actionSetup_Host.setText(_translate("MainWindow", "Setup Host"))
         self.actionSetup_Host.triggered.connect(
-            lambda: self.showDialog("Host Name", setting_type="HOST")
+            lambda: self.showDialog(controller, "Host Name", setting_type="HOST")
         )
         self.actionSetup_Rules.setText(_translate("MainWindow", "Setup Rules"))
         self.actionSetup_Rules.triggered.connect(
-            lambda: self.showDialog("Rules", setting_type="RULES")
+            lambda: self.showDialog(controller, "Rules", setting_type="RULES")
         )
 
-    def showDialog(self, form_label=None, setting_type=None):
+    def showDialog(self, controller, form_label=None, setting_type=None):
         text, ok = QtWidgets.QInputDialog.getText(
             self,
             "Settings",
             form_label,
-            text=self.resurface_host
+            text=controller.resurface_host
             if setting_type == "HOST"
-            else self.resurface_rules,
+            else controller.resurface_rules,
         )
         if ok:
             if text:
                 if setting_type == "HOST":
-                    self.resurface_host = str(text)
+                    controller.resurface_host = str(text)
                 elif setting_type == "RULES":
-                    self.resurface_rules = str(text)
+                    controller.resurface_rules = str(text)
 
     @staticmethod
     def popup(type="Info", msg=None):
@@ -239,9 +239,17 @@ class Controller:
     def validate(url_data):
         if not url_data:
             return False
+        regex = re.compile(
+            r"^(?:http|ftp)s?://"  # http:// or https://
+            r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # domain...
+            r"localhost|"  # localhost...
+            r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # ...or ip
+            r"(?::\d+)?"  # optional port
+            r"(?:/?|[/?]\S+)$",
+            re.IGNORECASE,
+        )
 
-        result = urlparse(url_data)
-        return all([result.scheme, result.path])
+        return re.match(regex, url_data) is not None
 
     @staticmethod
     def format_data(data):
